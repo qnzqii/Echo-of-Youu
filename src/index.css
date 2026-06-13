@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* 🎬 胶片电影级动态噪点背景 (Animated Film Grain) */
+.grain-overlay {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.85;
+  pointer-events: none;
+  animation: grain-dance 8s steps(10) infinite;
+  z-index: 10;
+}
+
+@keyframes grain-dance {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1%, -1%); }
+  20% { transform: translate(-2%, 1%); }
+  30% { transform: translate(1%, -2%); }
+  40% { transform: translate(-1%, 3%); }
+  50% { transform: translate(-2%, 1%); }
+  60% { transform: translate(1%, 2%); }
+  70% { transform: translate(3%, -1%); }
+  80% { transform: translate(-1%, -2%); }
+  90% { transform: translate(2%, 1%); }
+}
+
+/* 🌌 弥散光影（Mesh Gradient / Auroral Orbs）缓慢变幻 Keyframes */
+@keyframes float-orb-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.45;
+  }
+  33% {
+    transform: translate(60px, -40px) scale(1.15);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translate(-40px, 50px) scale(0.9);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.45;
+  }
+}
+
+@keyframes float-orb-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.5;
+  }
+  40% {
+    transform: translate(-80px, 60px) scale(0.85);
+    opacity: 0.35;
+  }
+  75% {
+    transform: translate(50px, -70px) scale(1.2);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes float-orb-3 {
+  0% {
+    transform: translate(0px, 0px) scale(1.1);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translate(50px, 80px) scale(0.95);
+    opacity: 0.55;
+  }
+  70% {
+    transform: translate(-60px, -50px) scale(1.15);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1.1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes float-orb-4 {
+  0% {
+    transform: translate(0px, 0px) scale(0.9);
+    opacity: 0.35;
+  }
+  35% {
+    transform: translate(-50px, -60px) scale(1.1);
+    opacity: 0.5;
+  }
+  65% {
+    transform: translate(70px, 40px) scale(0.85);
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(0.9);
+    opacity: 0.35;
+  }
+}
+
+/* 绑定到具体类的动效 */
+.animate-float-orb-1 {
+  animation: float-orb-1 22s ease-in-out infinite;
+}
+
+.animate-float-orb-2 {
+  animation: float-orb-2 28s ease-in-out infinite;
+}
+
+.animate-float-orb-3 {
+  animation: float-orb-3 25s ease-in-out infinite;
+}
+
+.animate-float-orb-4 {
+  animation: float-orb-4 32s ease-in-out infinite;
+}
+
+/* 🔮 3D 旋转滚轴单行结构与级联状态机 */
+.scrolling-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1.6em;
+  display: flex;
+  align-items: center;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  white-space: nowrap;     /* 🔒 强制部换行：保障在单行内完好闭合 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  /* 预留黄金内边距，确保斜体字母在溢出裁剪时具有极细微的缓冲，让倾斜字母舒展开来 */
+  padding-left: 0.5em;
+  padding-right: 1.5em;
+  
+  opacity: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* 🪐 5-7行真3D层叠与倾斜状态分级 - 彻底消除跳变与闪烁，代之以缓缓移动的精致安宁灰度 */
+.scrolling-item.level-0 {
+  opacity: 0.98;
+  color: #1A1A1A;
+  transform: translateY(0) rotateX(0deg) translateZ(105px);
+}
+
+/* 锁定/定格态 - 极具疗愈感与电影级氛围的呼吸同频暖金响应 */
+.scrolling-item.level-0.locked {
+  color: #c9a01c !important; /* 品质感暖香槟金，与附图色彩完美吻合 */
+  font-weight: 500;
+  animation: lock-gentle-breath 4s ease-in-out infinite;
+}
+
+/* 呼吸同频的柔顺动态机理 */
+@keyframes lock-gentle-breath {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+    transform: translateY(0) rotateX(0deg) translateZ(105px) scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    text-shadow: 0 0 25px rgba(212, 175, 55, 0.45);
+    transform: translateY(0) rotateX(0deg) translateZ(112px) scale(1.015);
+    opacity: 1;
+  }
+}
+
+/* 极柔和香槟黄背景光带的缓流呼吸 */
+@keyframes lock-bg-breath {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scaleY(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.03);
+  }
+}
+
+.animate-lock-bg-breath {
+  animation: lock-bg-breath 4s ease-in-out infinite;
+}
+
+/* 过渡项 1 级 - 紧凑均称的 3D 黄金间距，完美吻合附图 */
+.scrolling-item.level-1-up {
+  opacity: 0.38;
+  color: #7E7E7E;
+  transform: translateY(-2.15em) rotateX(24deg) translateZ(75px);
+}
+
+.scrolling-item.level-1-down {
+  opacity: 0.38;
+  color: #7E7E7E;
+  transform: translateY(2.15em) rotateX(-24deg) translateZ(75px);
+}
+
+/* 过渡项 2 级 - 保证正好让第 2 级项在边缘微闭产生半行可见的电影感 */
+.scrolling-item.level-2-up {
+  opacity: 0.10;
+  color: #ADADAD;
+  transform: translateY(-4.3em) rotateX(48deg) translateZ(35px) scale(0.96);
+}
+
+.scrolling-item.level-2-down {
+  opacity: 0.10;
+  color: #ADADAD;
+  transform: translateY(4.3em) rotateX(-48deg) translateZ(35px) scale(0.96);
+}
+
+/* 极致平滑补帧：新增第 3 级旋转溢出点，保证元素在淡入淡出最外圈时具有完美的 3D 球弧轨道，不会产生任何突兀闪烁 */
+.scrolling-item.level-3-up {
+  opacity: 0;
+  color: #CCCCCC;
+  transform: translateY(-6.45em) rotateX(72deg) translateZ(-10px) scale(0.92);
+  pointer-events: none;
+}
+
+.scrolling-item.level-3-down {
+  opacity: 0;
+  color: #CCCCCC;
+  transform: translateY(6.45em) rotateX(-72deg) translateZ(-10px) scale(0.92);
+  pointer-events: none;
+}
+
+/* 🏁 超越边界极限隐藏态：彻底解除因 transition 导致滚出可视区元素瞬间收缩回中心的重叠弊端 */
+.scrolling-item.level-out-up {
+  opacity: 0;
+  transform: translateY(-9.5em) rotateX(90deg) translateZ(-50px) scale(0.85);
+  pointer-events: none;
+}
+
+.scrolling-item.level-out-down {
+  opacity: 0;
+  transform: translateY(9.5em) rotateX(-90deg) translateZ(-50px) scale(0.85);
+  pointer-events: none;
+}
+

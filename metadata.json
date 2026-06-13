@@ -1,0 +1,6 @@
+{
+  "name": "I Am — 3D Roller",
+  "description": "一份极具电影感和治愈系的 3D 滚轴每日心语，伴有呼吸般弥散的动态暖光渐变与胶片噪点效果。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
