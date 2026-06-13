@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import WaterRippleCanvas from './components/WaterRippleCanvas';
 
 // 🔮 极致单行治愈系高能第一人称文案
 const SUB_PHRASES = [
@@ -272,6 +273,9 @@ export default function App() {
 
       {/* 🎬 纸张实体电影级噪点纹理覆层 (Film Grain) */}
       <div id="grain-canvas-overlay" className="grain-overlay" />
+
+      {/* 💧 Interactive liquid water ripple flow background */}
+      <WaterRippleCanvas />
 
       {/* 🔒 定格状态时激发的极柔和暖金背景光圈与横向辉光条（与文字同频呼吸） */}
       <div 
