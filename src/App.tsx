@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Sun, Moon, Wind, X } from 'lucide-react';
 import WaterRippleCanvas from './components/WaterRippleCanvas';
 
 // 🔮 极致单行治愈系高能第一人称文案
@@ -36,6 +37,82 @@ export default function App() {
   const [isHovered, setIsHovered] = useState(false);
   const [isThrottled, setIsThrottled] = useState(false);
   const [hasTransition, setHasTransition] = useState(true);
+
+  // 🪷 Mindfulness Zen Breathing state
+  const [isMindfulMode, setIsMindfulMode] = useState(false);
+  const [breathPhase, setBreathPhase] = useState<'inhale' | 'hold' | 'exhale'>('exhale');
+
+  // Synchronize dynamic breathe state machine (4-4-4 Box Breath Rhythm: 4s inhale, 4s hold, 4s exhale)
+  useEffect(() => {
+    if (!isMindfulMode) {
+      setBreathPhase('exhale');
+      return;
+    }
+
+    let active = true;
+    let timerId: any;
+
+    const runCycle = (phase: 'inhale' | 'hold' | 'exhale') => {
+      if (!active) return;
+      setBreathPhase(phase);
+
+      const delay = 4000; // Strict 4 seconds for all stages
+      let nextPhase: 'inhale' | 'hold' | 'exhale' = 'hold';
+
+      if (phase === 'inhale') {
+        nextPhase = 'hold';
+      } else if (phase === 'hold') {
+        nextPhase = 'exhale';
+      } else if (phase === 'exhale') {
+        nextPhase = 'inhale';
+      }
+
+      timerId = setTimeout(() => {
+        runCycle(nextPhase);
+      }, delay);
+    };
+
+    runCycle('inhale');
+
+    return () => {
+      active = false;
+      clearTimeout(timerId);
+    };
+  }, [isMindfulMode]);
+
+  // 🌙 Dark Theme state initialization (Time-prioritized, system preference combined)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedOverride = localStorage.getItem('user-theme-override');
+      if (savedOverride === 'dark') return true;
+      if (savedOverride === 'light') return false;
+
+      // Hour priority: 20:00 (8 PM) to 6:00 AM matches beautiful midnight theme automatically
+      const hour = new Date().getHours();
+      const isNightTime = hour >= 20 || hour < 6;
+      if (isNightTime) return true;
+
+      // System preference fallback
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Handle system color scheme modifications dynamically
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      // Rotate themes only if the user hasn't explicitly overridden them in this session
+      if (!localStorage.getItem('user-theme-override')) {
+        setIsDarkMode(e.matches);
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // 引用变量记录轮播定时、滚动累加和触控起始
   const autoFlipTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -200,6 +277,14 @@ export default function App() {
     triggerConfirmVibrate(nextLocked);
   };
 
+  // 7.5. 昼夜模式手动控制切换
+  const handleToggleTheme = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    localStorage.setItem('user-theme-override', nextDark ? 'dark' : 'light');
+    triggerConfirmVibrate(false);
+  };
+
   // 8. 辅助高度和相对偏移对齐
   const getItemClassName = (idx: number) => {
     const distance = idx - currentIndex;
@@ -230,43 +315,107 @@ export default function App() {
   };
 
   return (
-    <div id="app-root-container" className="relative w-full h-screen flex flex-col items-center justify-center p-5 overflow-hidden select-none">
+    <div 
+      id="app-root-container" 
+      className={`relative w-full h-screen flex flex-col items-center justify-center p-5 overflow-hidden select-none transition-colors duration-[1500ms] ease-out ${
+        isDarkMode ? 'dark-theme bg-[#0E110F]' : 'bg-[#FAF8F5]'
+      }`}
+    >
       
-      {/* 🌌 ✨ 极致唯美：动态弥散光影渐变层 (Ambient Flowing Mesh Gradient) */}
+      {/* 🪷 Mindfulness Zen Breathing Mini-Toggle Button (左上角精致静止极简按钮) */}
+      <button
+        id="mindfulness-toggle"
+        onClick={() => {
+          setIsMindfulMode(true);
+          triggerConfirmVibrate(false);
+        }}
+        className={`absolute top-6 left-6 md:top-8 md:left-8 px-[1.1rem] h-10 rounded-full flex items-center justify-center gap-2 border transition-all duration-[600ms] cubic-bezier(0.25, 1, 0.5, 1) cursor-pointer z-50 hover:scale-[1.03] active:scale-95 shadow-sm text-[0.7rem] tracking-[0.25em] font-sans font-light ${
+          isDarkMode
+            ? 'border-[#1E1E22] bg-[#0E0F12]/90 hover:bg-[#16171C] text-slate-300'
+            : 'border-[#E5E5E5] bg-[#FAF8F5]/80 hover:bg-[#F3F0EC] text-slate-700'
+        } ${
+          isMindfulMode ? 'opacity-0 pointer-events-none translate-y-[-10px]' : 'opacity-100 pointer-events-auto'
+        }`}
+        style={{ pointerEvents: isMindfulMode ? 'none' : 'auto' }}
+        aria-label="Start Mindfulness Breathing"
+      >
+        <Wind className="w-[0.95rem] h-[0.95rem] text-teal-600/80 dark:text-teal-400/80 animate-pulse" />
+        <span>BREATHE</span>
+      </button>
+
+      {/* ☀️/🌙 Theme Micro-Toggle Button (右上角精致静止的小太阳/小月亮小圆标) */}
+      <button
+        id="theme-toggle"
+        onClick={handleToggleTheme}
+        className={`absolute top-6 right-6 md:top-8 md:right-8 w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-[600ms] cubic-bezier(0.25, 1, 0.5, 1) cursor-pointer z-50 hover:scale-105 active:scale-95 shadow-sm ${
+          isDarkMode
+            ? 'border-[#1E1E22] bg-[#0E0F12]/90 hover:bg-[#16171C] text-slate-100'
+            : 'border-[#E5E5E5] bg-[#FAF8F5]/80 hover:bg-[#F3F0EC] text-slate-800'
+        } ${
+          isMindfulMode ? 'opacity-0 pointer-events-none translate-y-[-10px]' : 'opacity-100 pointer-events-auto'
+        }`}
+        style={{ pointerEvents: isMindfulMode ? 'none' : 'auto' }}
+        aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      >
+        {isDarkMode ? (
+          <Sun className="w-[1.12rem] h-[1.12rem] text-amber-200 animate-pulse" />
+        ) : (
+          <Moon className="w-[1.05rem] h-[1.05rem] text-slate-800" />
+        )}
+      </button>
+
+      {/* 🌌 ✨ 动态弥散光影渐变层 (Ambient Flowing Mesh Gradient) */}
       <div id="ambient-mesh-gradient-viewport" className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         
-        {/* 基础温暖燕麦大底色，自带渐变以提供丰盈的深度 */}
-        <div id="base-bg-canvas" className="absolute inset-0 bg-[#FAF8F5]" />
-        
-        {/* 1. 少女晨曦色 (杏柔橘粉球) - 在左上方呼吸飘散 */}
+        {/* 基础色底，自适应渐变以提供丰盈的深度 */}
         <div 
-          id="auroral-orb-1-peach"
-          className="absolute w-[65vw] h-[65vw] md:w-[45vw] md:h-[45vw] rounded-full filter blur-[80px] md:blur-[115px] bg-[#FCEADF] opacity-40 mix-blend-multiply top-[-10%] left-[-15%] animate-float-orb-1" 
+          id="base-bg-canvas" 
+          className={`absolute inset-0 transition-colors duration-[1500ms] ease-out ${
+            isDarkMode ? 'bg-[#0B0D0C]' : 'bg-[#FAF8F5]'
+          }`} 
         />
         
-        {/* 2. 润雅香槟色 (鎏金奶黄球) - 自带高阶暖色光。定格时轻微融入，极其平静舒展 */}
+        {/* 1. 润古雅竹绿 (雅致青绿球) - 在左上方呼吸飘散 */}
         <div 
-          id="auroral-orb-2-champagne"
-          className={`absolute w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] rounded-full filter blur-[90px] md:blur-[130px] mix-blend-multiply bottom-[-10%] right-[-10%] animate-float-orb-2 transition-all duration-[2400ms] ease-out ${
-            isLocked 
-              ? 'bg-[#FFF2D5] opacity-55 scale-105' 
-              : 'bg-[#FFF6E3] opacity-45'
+          id="auroral-orb-1-peach"
+          className={`absolute w-[65vw] h-[65vw] md:w-[45vw] md:h-[45vw] rounded-full filter blur-[80px] md:blur-[115px] transition-all duration-[2000ms] ease-out top-[-10%] left-[-15%] animate-float-orb-1 ${
+            isDarkMode ? 'bg-[#0F1612] opacity-35 mix-blend-screen' : 'bg-[#FAF3E2] opacity-50 mix-blend-multiply'
           }`}
         />
         
-        {/* 3. 清透鼠尾草色 (雨后青绿球) - 中和画面的甜腻，极具不经意的自然呼吸感 */}
+        {/* 2. 润雅香槟色 (鎏金奶黄球) - 自带高阶暖色光 */}
         <div 
-          id="auroral-orb-3-sage"
-          className="absolute w-[55vw] h-[55vw] md:w-[42vw] md:h-[42vw] rounded-full filter blur-[80px] md:blur-[110px] bg-[#E2ECE6] opacity-45 mix-blend-multiply top-[35%] left-[25%] animate-float-orb-3" 
+          id="auroral-orb-2-champagne"
+          className={`absolute w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] rounded-full filter blur-[90px] md:blur-[130px] transition-all duration-[2000ms] ease-out bottom-[-10%] right-[-10%] animate-float-orb-2 ${
+            isDarkMode 
+              ? isLocked 
+                ? 'bg-[#181C15] opacity-35 scale-105 mix-blend-screen' 
+                : 'bg-[#121611] opacity-25 mix-blend-screen'
+              : isLocked 
+                ? 'bg-[#FFF2D5] opacity-55 scale-105 mix-blend-multiply' 
+                : 'bg-[#FFF6E3] opacity-45 mix-blend-multiply'
+          }`}
         />
         
-        {/* 4. 轻浅风信子紫 (柔润紫晕球) - 在锁定状态下会悄悄与浅香槟色交织辉映 */}
+        {/* 3. 清透鼠尾草色 (雨后青绿球) - 极具自然呼吸感 */}
+        <div 
+          id="auroral-orb-3-sage"
+          className={`absolute w-[55vw] h-[55vw] md:w-[42vw] md:h-[42vw] rounded-full filter blur-[80px] md:blur-[110px] transition-all duration-[2000ms] ease-out top-[35%] left-[25%] animate-float-orb-3 ${
+            isDarkMode ? 'bg-[#0C150E] opacity-30 mix-blend-screen' : 'bg-[#E0EBE4] opacity-55 mix-blend-multiply'
+          }`}
+        />
+        
+        {/* 4. 轻浅温和松针绿 (松绿云雾球) */}
         <div 
           id="auroral-orb-4-lavender"
-          className={`absolute w-[50vw] h-[50vw] md:w-[38vw] md:h-[38vw] rounded-full filter blur-[80px] md:blur-[115px] mix-blend-multiply bottom-[30%] left-[-10%] animate-float-orb-4 transition-all duration-[2000ms] ${
-            isLocked 
-              ? 'bg-[#EAE4F5] opacity-40 scale-105' 
-              : 'bg-[#F2EEFA] opacity-30'
+          className={`absolute w-[50vw] h-[50vw] md:w-[38vw] md:h-[38vw] rounded-full filter blur-[80px] md:blur-[115px] transition-all duration-[2000ms] ease-out bottom-[30%] left-[-10%] animate-float-orb-4 ${
+            isDarkMode 
+              ? isLocked 
+                ? 'bg-[#151D18] opacity-30 scale-105 mix-blend-screen' 
+                : 'bg-[#0E1511] opacity-20 mix-blend-screen'
+              : isLocked 
+                ? 'bg-[#ECEAE4] opacity-50 scale-105 mix-blend-multiply' 
+                : 'bg-[#F4F3ED] opacity-35 mix-blend-multiply'
           }`}
         />
       </div>
@@ -275,45 +424,41 @@ export default function App() {
       <div id="grain-canvas-overlay" className="grain-overlay" />
 
       {/* 💧 Interactive liquid water ripple flow background */}
-      <WaterRippleCanvas />
+      <WaterRippleCanvas isDarkMode={isDarkMode} />
 
-      {/* 🔒 定格状态时激发的极柔和暖金背景光圈与横向辉光条（与文字同频呼吸） */}
+      {/* 🔒 定格状态时激发极柔暖金背景辉光 */}
       <div 
         id="lockGlow"
         className={`absolute left-0 w-full h-[1.9em] pointer-events-none transition-all duration-[1600ms] z-1 bg-[linear-gradient(90deg,transparent_0%,rgba(212,175,55,0.05)_15%,rgba(212,175,55,0.05)_85%,transparent_100%)] [mask-image:radial-gradient(ellipse,black_70%,transparent_100%)] ${
-          isLocked ? 'opacity-100 scale-100 animate-lock-bg-breath' : 'opacity-0 scale-[0.9]'
+          isLocked && !isMindfulMode ? 'opacity-100 scale-100 animate-lock-bg-breath' : 'opacity-0 scale-[0.9]'
         }`}
         style={{ top: 'calc(50% - 0.95em)' }}
       />
 
-      {/* 核心排版排布与轮椅视口区 */}
-      <main id="scroller-main-viewport" className="relative flex flex-row items-center justify-center w-full max-w-[1400px] text-[clamp(1.4rem,3.6vw,2.6rem)] leading-[1.2] z-2">
+      {/* 核心排版与视口 */}
+      <main 
+        id="scroller-main-viewport" 
+        className={`relative flex flex-row items-center justify-center w-full max-w-[1400px] text-[clamp(1.4rem,3.6vw,2.6rem)] leading-[1.2] z-2 transition-all duration-[1000ms] cubic-bezier(0.25, 1, 0.3, 1) ${
+          isMindfulMode ? 'opacity-0 scale-[0.96] pointer-events-none blur-[4px]' : 'opacity-100 scale-100 pointer-events-auto'
+        }`}
+      >
         
-        {/* 左侧锚点：平滑的双态淡入淡出（"I am" <--> "Today, I am"） */}
-        <div id="fixed-words-container" className="relative w-[28%] text-right pr-[5%] h-[8.2em] flex justify-end items-center whitespace-nowrap">
-          
+        {/* 左侧锚点：定格时与右侧同频高阶呼吸暖金辉光，慢速聚拢 */}
+        <div 
+          id="fixed-words-container" 
+          className={`relative w-[28%] text-right h-[8.2em] flex justify-end items-center whitespace-nowrap transition-all duration-[1800ms] cubic-bezier(0.16, 1, 0.3, 1) ${
+            isLocked ? 'pr-[1.2%]' : 'pr-[5%]'
+          }`}
+        >
           <span 
             id="anchorNormal"
-            className={`absolute font-medium italic text-[1.12em] flex items-center h-[1.6em] transition-all duration-[1800ms] cubic-bezier(0.65, 0, 0.35, 1) origin-right ${
+            className={`font-medium italic text-[1.15em] flex items-center h-[1.6em] transition-all duration-[1200ms] cubic-bezier(0.25, 1, 0.3, 1) origin-right ${
               isLocked 
-                ? 'opacity-0 translate-y-[15px] scale-[0.95] pointer-events-none' 
-                : 'opacity-100 translate-y-0 scale-100'
+                ? 'anchor-locked-breath' 
+                : 'text-slate-800 dark:text-slate-200'
             }`}
-            style={{ top: 'calc(50% - 0.8em)' }}
           >
             I am
-          </span>
-          
-          <span 
-            id="anchorLocked"
-            className={`absolute font-medium italic text-[1.12em] flex items-center h-[1.6em] transition-all duration-[1800ms] cubic-bezier(0.65, 0, 0.35, 1) origin-right ${
-              isLocked 
-                ? 'opacity-100 translate-y-0 scale-100' 
-                : 'opacity-0 translate-y-[15px] scale-[0.95] pointer-events-none'
-            }`}
-            style={{ top: 'calc(50% - 0.8em)' }}
-          >
-            Today, I am
           </span>
         </div>
 
@@ -333,7 +478,7 @@ export default function App() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
         >
-          {/* 拨动总轨 - 保持静置无重叠平移，将所有 3D 动力学解耦给每一个子项目 */}
+          {/* 拨动总轨 */}
           <div 
             id="scroller-track-chasis" 
             className="absolute left-0 top-0 w-full h-[1.6em]"
@@ -368,16 +513,84 @@ export default function App() {
         </div>
       </main>
 
-      {/* 底部暗示交互的小标签 - 自适应深浅金调，安静平静，严格还原美学 */}
+      {/* 底部小字提示 */}
       <div 
         id="statusTip"
         className={`absolute bottom-10 md:bottom-12 text-[0.8rem] tracking-[0.22em] uppercase font-sans pointer-events-none transition-all duration-[1200ms] z-5 ${
-          isLocked 
-            ? 'opacity-100 text-[#c9a01c]' 
-            : 'opacity-40 text-[#c9a01c]'
+          isMindfulMode 
+            ? 'opacity-0 translate-y-[10px] text-[#c9a01c]'
+            : isLocked 
+              ? 'opacity-100 text-[#c9a01c]' 
+              : 'opacity-40 text-[#c9a01c]'
         }`}
       >
         SCROLL TO WHEEL • TAP TO FREEZE
+      </div>
+
+      {/* 🪷 Zen Mindfulness Breathing Screen Area (清屏后的极简正念空间) */}
+      <div
+        id="mindfulness-zen-stage"
+        className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-[1400ms] cubic-bezier(0.25, 1, 0.3, 1) ${
+          isMindfulMode 
+            ? 'opacity-100 pointer-events-auto scale-100 z-[60]' 
+            : 'opacity-0 pointer-events-none scale-[1.06] z-40'
+        }`}
+      >
+        {/* ❌ 退出正念模式按钮 */}
+        <button
+          id="close-mindfulness"
+          onClick={() => {
+            setIsMindfulMode(false);
+            triggerConfirmVibrate(false);
+          }}
+          className={`absolute top-6 right-6 md:top-8 md:right-8 w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-[600ms] cubic-bezier(0.25, 1, 0.5, 1) cursor-pointer hover:scale-105 active:scale-95 shadow-sm z-[70] ${
+            isDarkMode
+              ? 'border-[#1E1E22] bg-[#0E0F12]/90 hover:bg-[#16171C] text-slate-100'
+              : 'border-[#E5E5E5] bg-[#FAF8F5]/80 hover:bg-[#F3F0EC] text-slate-800'
+          }`}
+          aria-label="Exit Mindfulness Mode"
+        >
+          <X className="w-[1.1rem] h-[1.1rem]" />
+        </button>
+
+        {/* 呼吸不规则填充图形容器 */}
+        <div className="relative w-[340px] h-[340px] md:w-[420px] md:h-[420px] flex items-center justify-center">
+          <div 
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              transform: (breathPhase === 'inhale' || breathPhase === 'hold') ? 'scale(1)' : 'scale(0.35)',
+              transition: 'transform 4000ms cubic-bezier(0.36, 0, 0.64, 1)',
+            }}
+          >
+            <div 
+              className="w-[260px] h-[260px] md:w-[320px] md:h-[320px] transition-all duration-1000 ease-out animate-zen-blob shadow-2xl backdrop-blur-[2px]"
+              style={{
+                background: isDarkMode
+                  ? 'radial-gradient(circle at center, rgba(255, 255, 255, 0.5) 0%, rgba(130, 155, 142, 0.18) 55%, rgba(68, 88, 77, 0.08) 100%)'
+                  : 'radial-gradient(circle at center, rgba(255, 255, 255, 1) 0%, rgba(183, 198, 189, 0.85) 55%, rgba(153, 172, 160, 0.75) 100%)',
+                boxShadow: isDarkMode 
+                  ? '0 0 100px rgba(130, 155, 142, 0.14), inset 0 0 40px rgba(255, 255, 255, 0.04)' 
+                  : '0 0 80px rgba(153, 172, 160, 0.22), inset 0 0 50px rgba(255, 255, 255, 0.6)'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* 精致正念引导字幕 */}
+        <div className="absolute bottom-20 md:bottom-24 text-center select-none pointer-events-none">
+          <p 
+            className={`text-xs md:text-sm tracking-[0.32em] font-sans font-light uppercase transition-all duration-1000 ${
+              isDarkMode ? 'text-slate-300' : 'text-slate-700'
+            }`}
+            style={{
+              textShadow: isDarkMode ? '0 2px 4px rgba(0,0,0,0.5)' : 'none'
+            }}
+          >
+            {breathPhase === 'inhale' && "吸气 · Inhale 4s"}
+            {breathPhase === 'hold' && "屏息 · Hold 4s"}
+            {breathPhase === 'exhale' && "呼气 · Exhale 4s"}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -146,7 +146,7 @@
   text-overflow: ellipsis;
   
   /* 预留黄金内边距，确保斜体字母在溢出裁剪时具有极细微的缓冲，让倾斜字母舒展开来 */
-  padding-left: 0.5em;
+  padding-left: 0.15em;
   padding-right: 1.5em;
   
   opacity: 0;
@@ -154,6 +154,26 @@
   backface-visibility: hidden;
   user-select: none;
   cursor: pointer;
+}
+
+/* 左侧 I am 定格同频呼吸呼吸特效 */
+@keyframes anchor-lock-gentle-breath {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.12);
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    text-shadow: 0 0 25px rgba(212, 175, 55, 0.40);
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+.anchor-locked-breath {
+  color: #c9a01c !important;
+  font-weight: 500;
+  animation: anchor-lock-gentle-breath 4s ease-in-out infinite;
 }
 
 /* 🪐 5-7行真3D层叠与倾斜状态分级 - 彻底消除跳变与闪烁，代之以缓缓移动的精致安宁灰度 */
@@ -253,4 +273,80 @@
   transform: translateY(9.5em) rotateX(-90deg) translateZ(-50px) scale(0.85);
   pointer-events: none;
 }
+
+/* ==========================================================================
+   🌙 Deep Ink / Velvet Silver Dark Theme Overrides
+   ========================================================================== */
+
+/* Left fixed words container custom transition state */
+#fixed-words-container span {
+  color: #1A1A1A;
+  transition: color 1.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.dark-theme #fixed-words-container span {
+  color: #E2E8F0; /* Elegant soft Silver-White */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Center rolling item in active state (Level 0) */
+.dark-theme .scrolling-item.level-0 {
+  color: #F1F5F9; /* High-quality premium velvet white */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Level 1 scrolling neighbors in dark theme */
+.dark-theme .scrolling-item.level-1-up,
+.dark-theme .scrolling-item.level-1-down {
+  color: #64748B; /* Soft carbon silver, extremely pleasing opacity */
+}
+
+/* Level 2 scrolling semi-visible layers in dark theme */
+.dark-theme .scrolling-item.level-2-up,
+.dark-theme .scrolling-item.level-2-down {
+  color: #334155; /* Subtly integrated deep charcoal anthracite */
+}
+
+/* Level 3 scrolling boundaries in dark theme */
+.dark-theme .scrolling-item.level-3-up,
+.dark-theme .scrolling-item.level-3-down {
+  color: #1E293B;
+}
+
+/* ==========================================================================
+   🪷 Zen Mindfulness Breathing Blob (Organic Morphing decoupled from state-driven scaling)
+   ========================================================================== */
+
+@keyframes zen-morph-rotate {
+  0% {
+    border-radius: 38% 62% 40% 60% / 53% 38% 62% 47%;
+    transform: rotate(0deg) translate(0px, 0px) scale(0.95);
+  }
+  20% {
+    border-radius: 68% 32% 64% 36% / 35% 62% 38% 65%;
+    transform: rotate(72deg) translate(-25px, 20px) scale(1.12);
+  }
+  40% {
+    border-radius: 28% 72% 24% 76% / 68% 28% 72% 32%;
+    transform: rotate(144deg) translate(28px, -22px) scale(0.88);
+  }
+  60% {
+    border-radius: 76% 24% 72% 28% / 32% 76% 24% 68%;
+    transform: rotate(216deg) translate(-22px, -14px) scale(1.15);
+  }
+  80% {
+    border-radius: 30% 70% 34% 66% / 72% 30% 70% 28%;
+    transform: rotate(288deg) translate(20px, 26px) scale(0.87);
+  }
+  100% {
+    border-radius: 38% 62% 40% 60% / 53% 38% 62% 47%;
+    transform: rotate(360deg) translate(0px, 0px) scale(0.95);
+  }
+}
+
+.animate-zen-blob {
+  animation: zen-morph-rotate 22s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+
+
 

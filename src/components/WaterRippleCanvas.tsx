@@ -1,7 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function WaterRippleCanvas() {
+export default function WaterRippleCanvas({ isDarkMode }: { isDarkMode: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isDarkModeRef = useRef<boolean>(isDarkMode);
+
+  // Update ref dynamically on style shifts to avoid resetting fluid buffers
+  useEffect(() => {
+    isDarkModeRef.current = isDarkMode;
+  }, [isDarkMode]);
   
   // Physics buffer references
   const colsRef = useRef<number>(0);
@@ -169,6 +175,20 @@ export default function WaterRippleCanvas() {
       const imgData = offlineCtx.createImageData(cols, rows);
       const data = imgData.data;
 
+      // Extract current theme values reactively
+      const currentDark = isDarkModeRef.current;
+      const shadowR = currentDark ? 2 : 88;
+      const shadowG = currentDark ? 2 : 83;
+      const shadowB = currentDark ? 4 : 78;
+      const maxShadowOpacity = currentDark ? 32 : 26;
+      const shadowFactor = currentDark ? 0.45 : 0.35;
+
+      const peakR = currentDark ? 200 : 255;
+      const peakG = currentDark ? 215 : 255;
+      const peakB = currentDark ? 250 : 255;
+      const maxPeakOpacity = currentDark ? 30 : 36;
+      const peakFactor = currentDark ? 0.52 : 0.5;
+
       for (let y = 1; y < rows - 1; y++) {
         const rowOffset = y * cols;
         for (let x = 1; x < cols - 1; x++) {
@@ -183,19 +203,19 @@ export default function WaterRippleCanvas() {
           const pixelIdx = idx * 4;
 
           if (val > 0) {
-            // Shiny highlight peaks
-            data[pixelIdx] = 255;
-            data[pixelIdx + 1] = 255;
-            data[pixelIdx + 2] = 255;
-            // Translucent gentle specular glow (reduced max opacity from 68 to 36 for pure elegance)
-            data[pixelIdx + 3] = Math.min(36, Math.floor(val * 0.5));
+            // Shiny highlight peaks (Moonlight on ink in dark, soft daylight in light)
+            data[pixelIdx] = peakR;
+            data[pixelIdx + 1] = peakG;
+            data[pixelIdx + 2] = peakB;
+            // Translucent gentle specular glow
+            data[pixelIdx + 3] = Math.min(maxPeakOpacity, Math.floor(val * peakFactor));
           } else {
-            // Soft warm clay shadow valleys that look elegant on warm background
-            data[pixelIdx] = 88;
-            data[pixelIdx + 1] = 83;
-            data[pixelIdx + 2] = 78;
-            // Delicate translucent refraction values (reduced max opacity from 52 to 26)
-            data[pixelIdx + 3] = Math.min(26, Math.floor(-val * 0.35));
+            // Shadow valleys: Dark obsidian velvet in dark mode, soft warm clay on rich neutral background
+            data[pixelIdx] = shadowR;
+            data[pixelIdx + 1] = shadowG;
+            data[pixelIdx + 2] = shadowB;
+            // Delicate translucent refraction values
+            data[pixelIdx + 3] = Math.min(maxShadowOpacity, Math.floor(-val * shadowFactor));
           }
         }
       }
